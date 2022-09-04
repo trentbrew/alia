@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html data-theme="night">
+	<head>
+		<title>Alias</title>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link href="https://cdn.jsdelivr.net/npm/daisyui@2.24.0/dist/full.css" rel="stylesheet" type="text/css" />
+		<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
+		<script src="js/lib/jquery-3.1.1.min.js"></script>
+		<script src="js/popup.js"></script>
+	</head>
+	<body>
+		<main class="p-8 bg-black">
+			<div id="aliases"></div>
+			<form id="new_alias" class="flex gap-3 w-full pt-4">
+				<input style="width: 120px" type="text" id="alias" class="input input-bordered input-secondary">
+				<input style="width: 360px" type="text" id="url" class="input input-bordered">
+				<button type="submit" id="submit" class="btn btn-circle btn-primary">
+					<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+				</button>
+			</form>
+		</main>
+	</body>
+</html>

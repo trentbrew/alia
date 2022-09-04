@@ -5,6 +5,7 @@
 } */
 #popup {
   box-sizing: border-box;
+  min-width: 700px;
 }
 
 /* inputs */

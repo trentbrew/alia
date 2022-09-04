@@ -1,8 +1,8 @@
 /* popup */
 
-body {
-  background: black;
-}
+/* html, body {
+  background: black !important;
+} */
 #popup {
   box-sizing: border-box;
 }
@@ -10,12 +10,12 @@ body {
 /* inputs */
 
 form {
-  backdrop-filter: blur(16px);
+  /* background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px); */
   border-bottom: 1px solid rgba(255,255,255,0.1);
-  background: rgba(0,0,0,0.9);
 }
 #alias {
-  width: 200px;
+  width: 250px;
 }
 #url {
   width: 100%;

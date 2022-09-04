@@ -1,7 +1,7 @@
 {
 	"name": "Alia",
 	"short_name": "$",
-	"description" : "To use, type 'q' into the search bar.",
+	"description" : "To use, type 'q + tab' into the search bar.",
 	"version": "1.0",
 	"permissions": [
 		"storage",

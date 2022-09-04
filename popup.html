@@ -1,26 +1,35 @@
 <!DOCTYPE html>
-<html data-theme="dark">
+<html data-theme="night">
 	<head>
 		<title>Alias</title>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 		<link href="https://cdn.jsdelivr.net/npm/daisyui@2.24.0/dist/full.css" rel="stylesheet" type="text/css" />
 		<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
 		<link href="css/styles.css" rel="stylesheet" type="text/css" />
-		<script src="js/lib/jquery-3.1.1.min.js"></script>
-		<script src="js/popup.js"></script>
+		<!-- <script src="js/lib/jquery-3.1.1.min.js"></script> -->
+		<!-- <script src="js/popup.js"></script> -->
+		<script src="https://unpkg.com/vue@2.6.1/dist/vue.js"></script>
+		<script src="js/popup-vue.js"></script>
+
 	</head>
 	<body>
 
 		<main id="popup">
 			<div class="w-full">
-				<form id="new_alias" class="flex gap-3 w-full fixed top-0 z-50 p-8">
-					<input id="alias" type="text" class="input input-bordered input-secondary bg-transparent" placeholder="Alias">
-					<input id="url" type="text" class="input input-bordered bg-transparent" placeholder="URL">
-					<button type="submit" id="submit" class="btn btn-circle btn-primary">
-						<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-					</button>
+
+				<form id="new-alias" class="flex gap-3 w-full fixed top-0 z-50 p-8 bg-base-100">
+					<input ref="alias" :value="alias.name" id="alias" type="text" class="input input-bordered bg-transparent" :class="`input-${alias.status || 'secondary'}`" :placeholder="alias.placeholder.name">
+					<input :value="alias.url" id="url" type="text" class="input input-bordered bg-transparent" :class="(alias.status == error) && 'input-error'" :placeholder="alias.placeholder.url">
+					<button type="submit" id="submit" class="btn btn-circle btn-primary"><svg class="w-6 h-6" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
 				</form>
-				<div id="aliases" class="p-8"></div>
+
+				<div id="aliases" class="p-8">
+					<li v-for="(alias, index) in aliases" class="flex gap-3 mb-4 w-full justify-start">
+						<a role="button" class="badge badge-error badge-lg px-1 hover:opacity-75 cursor-pointer !duration-0" id="${alias}"><svg fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></a>
+						<div class="badge badge-lg badge-secondary">{{ alias }}</div><div class="badge badge-lg w-[500px] truncate text-ellipsis align-left justify-start opacity-75">{{ url }}</div>
+					</li>
+				</div>
+
 			</div>
 		</main>
 

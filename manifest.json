@@ -1,6 +1,6 @@
 {
 	"name": "Alia",
-	"short_name": "➤",
+	"short_name": "$",
 	"description" : "To use, type 'q' into the search bar.",
 	"version": "1.0",
 	"permissions": [
@@ -11,15 +11,15 @@
 		"scripts": ["js/background.js"]
 	},
 	"browser_action": {
-		"default_title": "➤",
-		"default_icon": "img/alias_16x16.png",
+		"default_title": "$",
+		"default_icon": "img/alia_16x16.png",
 		"default_popup": "popup.html"
 	},
 	"omnibox": {"keyword" : "q"},
 	"icons": {
-		"16": "img/alias_16x16.png",
-		"48": "img/alias_48x48.png",
-		"128": "img/alias_128x128.png"
+		"16": "img/alia_16x16.png",
+		"48": "img/alia_48x48.png",
+		"128": "img/alia_128x128.png"
 	},
 	"manifest_version": 2,
 	"content_security_policy": "script-src 'self' 'unsafe-eval' https://ssl.google-analytics.com; object-src 'self'"

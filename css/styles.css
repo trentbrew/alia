@@ -1,8 +1,8 @@
 /* popup */
 
-/* html, body {
+html, body {
   background: black !important;
-} */
+}
 #popup {
   box-sizing: border-box;
   min-width: 700px;
@@ -11,9 +11,9 @@
 /* inputs */
 
 form {
-  /* background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(12px); */
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.16);
 }
 #alias {
   width: 250px;

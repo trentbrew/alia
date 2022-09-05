@@ -2,7 +2,7 @@
 
 #popup {
   box-sizing: border-box;
-  min-width: 700px;
+  min-width: 800px;
 }
 
 /* inputs */
@@ -18,7 +18,7 @@
   min-width: 400px;
 }
 #go {
-  min-width: 100%;
+  width: 100%;
 }
 
 /* alias list */

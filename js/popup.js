@@ -15,7 +15,7 @@ new Vue({
     }
   },
   mounted: function() {
-    // this.$refs.alias.focus()
+    this.$refs.alias.focus()
     this.getAliases()
     chrome.storage.onChanged.addListener((changes, namespace) => {
       for (key in changes) {
@@ -50,6 +50,7 @@ new Vue({
       }
       this.setAlias(alias, url)
       window.close()
+      return false
     },
   },
 })

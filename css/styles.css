@@ -1,8 +1,5 @@
 /* popup */
 
-html, body {
-  background: black !important;
-}
 #popup {
   box-sizing: border-box;
   min-width: 700px;
@@ -10,15 +7,13 @@ html, body {
 
 /* inputs */
 
-form {
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(12px);
+#topbar {
   border-bottom: 1px solid rgba(255,255,255,0.16);
 }
 #alias {
   width: 250px;
 }
-#url {
+#url, #go {
   width: 100%;
   min-width: 400px;
 }
@@ -26,5 +21,5 @@ form {
 /* alias list */
 
 #aliases {
-  margin-top: 112px;
+  margin-top: 180px;
 }

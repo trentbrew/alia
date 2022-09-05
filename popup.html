@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="night">
+<html data-theme="business">
 	<head>
 		<title>Alias</title>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -13,14 +13,17 @@
 
 		<main id="popup">
 			<div class="w-full">
-				<form id="new_alias" class="flex gap-3 w-full fixed top-0 z-50 p-8">
-					<input id="alias" type="text" class="input input-bordered input-secondary bg-transparent" placeholder="Alias">
-					<input id="url" type="text" class="input input-bordered bg-transparent" placeholder="URL">
-					<button type="submit" id="submit" class="btn btn-circle btn-primary">
-						<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-					</button>
-				</form>
-				<div id="aliases" class="p-8"></div>
+				<div id="topbar" class="p-8 fixed top-0 z-50 w-full bg-base-300">
+					<form id="go-form">
+						<input id="go" type="text" class="input input-lg input-primary rounded input-xl mb-8" placeholder="Where to?">
+					</form>
+					<form id="new" class="flex gap-8 w-full">
+						<input id="alias" type="text" class="input input-xs input-bordered rounded" placeholder="Alias">
+						<input id="url" type="text" class="input input-xs input-bordered rounded" placeholder="URL">
+						<button type="submit" id="submit" class="btn btn-secondary btn-xs rounded-full">+</button>
+					</form>
+				</div>
+				<div id="aliases" class="px-8 py-6 bg-base-300"></div>
 			</div>
 		</main>
 

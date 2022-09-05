@@ -39,6 +39,7 @@ function set(alias, url) {
   	$("#alias").val("")
 		$("#url").val("")
 	})
+	alert(`Successfully created alias '${alias}'`)
   window.close()
 }
 
@@ -67,6 +68,7 @@ function clear() {
 function remove(alias) {
 	chrome.storage.sync.remove(alias, () => {
 		$(`#${alias}`).parent().remove()
+		alert(`Alias '${alias}' has been removed`)
 	})
 }
 
@@ -87,20 +89,17 @@ function insert(alias, url) {
 
 function go(text) {
 	if (text in aliases) {
-		alert('you input a valid alias')
 		chrome.tabs.update({ url: aliases[text] })
 	}
 	else if (text.match(link)) {
-		alert('you input a valid url')
 		chrome.tabs.update({ url: text } )
 	}
 	else if (text.match(re)) {
-		alert('you input a google search')
 		var result = eval(text).toString();
 		chrome.tabs.update({url: `https://google.com/search?q=${result}`})
 	}
 	else {
-		alert('you input a google search?')
 		chrome.tabs.update({url: `https://google.com/search?q=${text}`})
 	}
+	window.close()
 }

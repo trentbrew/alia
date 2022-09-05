@@ -8,18 +8,21 @@
 /* inputs */
 
 #topbar {
-  border-bottom: 1px solid rgba(255,255,255,0.16);
+  /* border-bottom: 1px solid rgba(255,255,255,0.16); */
 }
 #alias {
   width: 250px;
 }
-#url, #go {
+#url {
   width: 100%;
   min-width: 400px;
+}
+#go {
+  min-width: 100%;
 }
 
 /* alias list */
 
 #aliases {
-  margin-top: 180px;
+  margin-top: 196px;
 }

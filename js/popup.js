@@ -30,6 +30,12 @@ $(() => {
 		}
 		go(text)
 	})
+
+	$('#go').keyup(e => {
+		$('#aliases').empty()
+		var text = $('#go').val()
+		getFiltered(text)
+	})
 })
 
 function set(alias, url) {
@@ -54,7 +60,19 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 function get() {
 	chrome.storage.sync.get(null, obj => {
-		for (o in obj) insert(o, obj[o])
+		for (o in obj) {
+			insert(o, obj[o])
+		}
+	})
+}
+
+function getFiltered(text) {
+	chrome.storage.sync.get(null, obj => {
+		for (o in obj) {
+			if (o.includes(text)) {
+				insert(o, obj[o])
+			}
+		}
 	})
 }
 
@@ -78,7 +96,7 @@ function insert(alias, url) {
 			<a class="badge badge-error rounded-full badge-lg px-1 hover:opacity-75 cursor-pointer duration-0" id="${alias}">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
 			</a>
-			<div class="badge badge-secondary rounded-full">${alias}</div><div class="badge rounded-full max-w-full align-left text-ellipsis truncate opacity-75 bg-transparent justify-start">${url}</div>
+			<div class="badge badge-secondary rounded-full">${alias}</div><div class="max-w-full align-left opacity-75 truncate">${url}</div>
 		</div>
 	`)
 	$(`#${alias}`).click(e => {
@@ -89,17 +107,17 @@ function insert(alias, url) {
 
 function go(text) {
 	if (text in aliases) {
-		chrome.tabs.update({ url: aliases[text] })
+		chrome.tabs.create({ url: aliases[text] })
 	}
 	else if (text.match(link)) {
-		chrome.tabs.update({ url: text } )
+		chrome.tabs.create({ url: text } )
 	}
 	else if (text.match(re)) {
 		var result = eval(text).toString();
-		chrome.tabs.update({url: `https://google.com/search?q=${result}`})
+		chrome.tabs.create({url: `https://google.com/search?q=${result}`})
 	}
 	else {
-		chrome.tabs.update({url: `https://google.com/search?q=${text}`})
+		chrome.tabs.create({url: `https://google.com/search?q=${text}`})
 	}
 	window.close()
 }

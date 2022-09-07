@@ -106,17 +106,14 @@ function insert(alias, url) {
 }
 
 function go(text) {
+	// alias
 	if (text in aliases) {
 		chrome.tabs.create({ url: aliases[text] })
-	}
-	else if (text.match(link)) {
-		chrome.tabs.create({ url: text } )
-	}
-	else if (text.match(re)) {
-		var result = eval(text).toString();
-		chrome.tabs.create({url: `https://google.com/search?q=${result}`})
-	}
-	else {
+	// url
+	} else if (text.match(/[a-zA-Z0-9-_.]+\.[a-zA-Z]{2,5}(\/.*)?$/)) { //
+		chrome.tabs.create({ url: text })
+	// search
+	} else {
 		chrome.tabs.create({url: `https://google.com/search?q=${text}`})
 	}
 	window.close()

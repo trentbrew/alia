@@ -15,12 +15,13 @@
 			<div class="w-full">
 				<div id="topbar" class="p-8 fixed top-0 z-50 w-full bg-base-300">
 					<form id="go-form">
-						<input id="go" type="text" class="input input-lg input-primary rounded input-xl mb-8" placeholder="">
+						<input id="go" type="text" class="input input-lg input-secondary rounded input-xl mb-8" placeholder="Where to?">
 					</form>
-					<form id="new" class="flex gap-8 w-full">
-						<input id="alias" type="text" class="input input-xs input-bordered rounded" placeholder="Alias">
-						<input id="url" type="text" class="input input-xs input-bordered rounded" placeholder="URL">
-						<button type="submit" id="submit" class="btn btn-secondary btn-xs rounded-full">+</button>
+					<p class="pb-5">Add a new Alias</p>
+					<form id="new" class="flex gap-0 w-full">
+						<input id="alias" type="text" class="input input-sm input-bordered rounded-l-full rounded-r-0" placeholder="Alias">
+						<input id="url" type="text" class="input input-sm input-bordered rounded-l-0 rounded-r-full" placeholder="URL">
+						<button type="submit" id="submit" class="btn btn-secondary btn-sm rounded-full ml-5">+</button>
 					</form>
 				</div>
 				<div id="aliases" class="px-8 py-6 bg-base-100"></div>

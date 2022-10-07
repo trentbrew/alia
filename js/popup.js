@@ -6,9 +6,7 @@ chrome.storage.sync.get(null, obj => {
 
 $(() => {
 	get()
-
   $("#go").focus()
-
 	$("#new").submit(e => {
 		var alias = $("#alias").val().replace(/[^\w]/g, '')
 		var url = $("#url").val()
@@ -92,8 +90,8 @@ function remove(alias) {
 
 function insert(alias, url) {
 	$("#aliases").append(`
-		<div class="flex gap-6 mb-3 w-full">
-			<a class="badge badge-error rounded-full badge-lg px-1 hover:opacity-75 cursor-pointer duration-0" id="${alias}">
+		<div class="flex gap-6 mb-3 w-full items-center">
+			<a class="badge badge-error rounded-full badge-lg px-1 hover:opacity-75 cursor-pointer !duration-0" id="${alias}">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
 			</a>
 			<div class="badge badge-secondary rounded-full">${alias}</div><div class="max-w-full align-left opacity-75 truncate">${url}</div>
@@ -105,16 +103,21 @@ function insert(alias, url) {
 	})
 }
 
+// function showAdd() {
+// 	$('#new-wrapper').css('display', 'none')
+// }
+
+// function hideAdd() {
+// 	$('#new-wrapper').css('display', 'block')
+// }
+
 function go(text) {
-	// alias
 	if (text in aliases) {
-		chrome.tabs.create({ url: aliases[text] })
-	// url
-	} else if (text.match(/[a-zA-Z0-9-_.]+\.[a-zA-Z]{2,5}(\/.*)?$/)) { //
-		chrome.tabs.create({ url: text })
-	// search
+		chrome.tabs.update({ url: aliases[text] })
+	} else if (text.match(/[a-zA-Z0-9-_.]+\.[a-zA-Z]{2,5}(\/.*)?$/)) {
+		chrome.tabs.update({ url: text })
 	} else {
-		chrome.tabs.create({url: `https://google.com/search?q=${text}`})
+		chrome.tabs.update({url: `https://google.com/search?q=${text}`})
 	}
 	window.close()
 }

@@ -8,21 +8,27 @@
 /* inputs */
 
 #topbar {
-  /* border-bottom: 1px solid rgba(255,255,255,0.16); */
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(32px);
+  border-bottom: 1px solid rgba(255,255,255,0.16);
 }
+
 #alias {
   width: 250px;
+  background: transparent;
 }
 #url {
   width: 100%;
   min-width: 400px;
+  background: transparent;
 }
 #go {
   width: 100%;
+  background: transparent;
 }
 
 /* alias list */
 
 #aliases {
-  margin-top: 196px;
+  margin-top: 250px;
 }

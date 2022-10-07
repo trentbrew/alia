@@ -103,14 +103,6 @@ function insert(alias, url) {
 	})
 }
 
-// function showAdd() {
-// 	$('#new-wrapper').css('display', 'none')
-// }
-
-// function hideAdd() {
-// 	$('#new-wrapper').css('display', 'block')
-// }
-
 function go(text) {
 	if (text in aliases) {
 		chrome.tabs.update({ url: aliases[text] })

@@ -1,4 +1,5 @@
 {
+	"manifest_version": 3,
 	"name": "Alia",
 	"short_name": "$",
 	"description" : "To use, type 'q + tab' into the search bar.",
@@ -8,9 +9,9 @@
 		"activeTab"
 	],
 	"background": {
-		"scripts": ["js/background.js"]
+		"service_worker": "js/background.js"
 	},
-	"browser_action": {
+	"action": {
 		"default_title": "$",
 		"default_icon": "img/alia_16x16.png",
 		"default_popup": "popup.html"
@@ -20,7 +21,5 @@
 		"16": "img/alia_16x16.png",
 		"48": "img/alia_48x48.png",
 		"128": "img/alia_128x128.png"
-	},
-	"manifest_version": 2,
-	"content_security_policy": "script-src 'self' 'unsafe-eval' https://ssl.google-analytics.com; object-src 'self'"
+	}
 }

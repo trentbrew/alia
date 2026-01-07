@@ -1,25 +1,28 @@
 {
-	"manifest_version": 3,
-	"name": "Alia",
-	"short_name": "$",
-	"description" : "To use, type 'q + tab' into the search bar.",
-	"version": "1.0",
-	"permissions": [
-		"storage",
-		"activeTab"
-	],
-	"background": {
-		"service_worker": "js/background.js"
-	},
-	"action": {
-		"default_title": "$",
-		"default_icon": "img/alia_16x16.png",
-		"default_popup": "popup.html"
-	},
-	"omnibox": {"keyword" : "q"},
-	"icons": {
-		"16": "img/alia_16x16.png",
-		"48": "img/alia_48x48.png",
-		"128": "img/alia_128x128.png"
-	}
+  "manifest_version": 3,
+  "name": "Alia",
+  "short_name": "$",
+  "description": "To use, type 'q + tab' into the search bar.",
+  "version": "1.0",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "js/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "$",
+    "default_icon": "img/icon16.png",
+    "default_popup": "popup.html"
+  },
+  "omnibox": { "keyword": "q" },
+  "icons": {
+    "16": "img/icon16.png",
+    "48": "img/icon48.png",
+    "128": "img/icon128.png"
+  }
 }

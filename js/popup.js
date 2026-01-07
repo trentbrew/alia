@@ -1,8 +1,14 @@
-var aliases = {}
+import aliasStorage from './storage.js';
 
-chrome.storage.sync.get(null, obj => {
-  for (o in obj) aliases[o] = obj[o]
-})
+// Get the chrome API
+const { chrome } = window;
+
+let aliases = {};
+
+// Initialize aliases from IndexedDB
+document.addEventListener('DOMContentLoaded', async () => {
+  aliases = await aliasStorage.getAll() || {};
+});
 
 $(() => {
 	get()
@@ -36,56 +42,69 @@ $(() => {
 	})
 })
 
-function set(alias, url) {
-	var obj = {}
-	obj[alias] = url
-	chrome.storage.sync.set(obj, () => {
-  	$("#alias").val("")
-		$("#url").val("")
-	})
-	alert(`Successfully created alias '${alias}'`)
-  window.close()
+async function set(alias, url) {
+  try {
+    await aliasStorage.set(alias, url);
+    aliases[alias] = url;
+    $("#alias").val("");
+    $("#url").val("");
+    alert(`Successfully created alias '${alias}'`);
+    window.close();
+  } catch (error) {
+    console.error('Error saving alias:', error);
+    alert('Failed to save alias. Please try again.');
+  }
 }
 
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    for (key in changes) {
-      var storageChange = changes[key]
-      if (storageChange.newValue != null) {
-      	insert(key, storageChange.newValue)
+// No need for a change listener with IndexedDB as we update the UI directly
+
+async function get() {
+  try {
+    const allAliases = await aliasStorage.getAll();
+    $("#aliases").empty();
+    for (const alias in allAliases) {
+      insert(alias, allAliases[alias]);
+    }
+  } catch (error) {
+    console.error('Error getting aliases:', error);
+  }
+}
+
+async function getFiltered(text) {
+  try {
+    const allAliases = await aliasStorage.getAll();
+    $("#aliases").empty();
+    for (const alias in allAliases) {
+      if (alias.toLowerCase().includes(text.toLowerCase())) {
+        insert(alias, allAliases[alias]);
       }
     }
-})
-
-function get() {
-	chrome.storage.sync.get(null, obj => {
-		for (o in obj) {
-			insert(o, obj[o])
-		}
-	})
+  } catch (error) {
+    console.error('Error filtering aliases:', error);
+  }
 }
 
-function getFiltered(text) {
-	chrome.storage.sync.get(null, obj => {
-		for (o in obj) {
-			if (o.includes(text)) {
-				insert(o, obj[o])
-			}
-		}
-	})
+async function clear() {
+  try {
+    await aliasStorage.clear();
+    aliases = {};
+    $("#aliases").empty();
+    console.log('Storage cleared');
+  } catch (error) {
+    console.error('Error clearing storage:', error);
+  }
 }
 
-function clear() {
-	chrome.storage.sync.clear(() => {
-		console.log('cleared!')
-	})
-	$("#aliases").html("")
-}
-
-function remove(alias) {
-	chrome.storage.sync.remove(alias, () => {
-		$(`#${alias}`).parent().remove()
-		alert(`Alias '${alias}' has been removed`)
-	})
+async function remove(alias) {
+  try {
+    await aliasStorage.remove(alias);
+    delete aliases[alias];
+    $(`#${alias}`).parent().remove();
+    alert(`Alias '${alias}' has been removed`);
+  } catch (error) {
+    console.error('Error removing alias:', error);
+    alert('Failed to remove alias. Please try again.');
+  }
 }
 
 function insert(alias, url) {
@@ -104,12 +123,22 @@ function insert(alias, url) {
 }
 
 function go(text) {
-	if (text in aliases) {
-		chrome.tabs.update({ url: aliases[text] })
-	} else if (text.match(/[a-zA-Z0-9-_.]+\.[a-zA-Z]{2,5}(\/.*)?$/)) {
-		chrome.tabs.update({ url: text })
-	} else {
-		chrome.tabs.update({url: `https://google.com/search?q=${text}`})
-	}
-	window.close()
+  try {
+    let url;
+    
+    if (text in aliases) {
+      url = aliases[text];
+    } else if (text.match(/^https?:\/\//) || text.match(/^[a-zA-Z0-9-_.]+\.[a-zA-Z]{2,5}(\/.*)?$/)) {
+      // Add https:// if not present
+      url = text.match(/^https?:\/\//) ? text : `https://${text}`;
+    } else {
+      url = `https://google.com/search?q=${encodeURIComponent(text)}`;
+    }
+    
+    chrome.tabs.update({ url });
+    window.close();
+  } catch (error) {
+    console.error('Error navigating to URL:', error);
+    alert('Failed to navigate. Please try again.');
+  }
 }

@@ -1,36 +1,204 @@
 <!DOCTYPE html>
 <html data-theme="black">
-	<head>
-		<title>Alias</title>
-		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-		<link href="https://cdn.jsdelivr.net/npm/daisyui@2.24.0/dist/full.css" rel="stylesheet" type="text/css" />
-		<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
-		<link href="css/styles.css" rel="stylesheet" type="text/css" />
-		<script src="js/lib/jquery-3.1.1.min.js"></script>
-		<script src="js/popup.js"></script>
-	</head>
-	<body>
+  <head>
+    <title>Alia - URL Shortener</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.24.0/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style>
+      /* Custom styles for alias items */
+      .alias-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        background-color: #2a2a2a;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+      }
+      .alias-item:hover {
+        background-color: #333;
+      }
+      .alias {
+        font-weight: 500;
+        color: #60a5fa;
+        margin-right: 1rem;
+        min-width: 120px;
+      }
+      .url {
+        flex: 1;
+        color: #9ca3af;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: 1rem;
+      }
+      .remove-btn {
+        color: #ef4444;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.25rem;
+        line-height: 1;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+      }
+      .remove-btn:hover {
+        background-color: rgba(239, 68, 68, 0.1);
+      }
+      #loading {
+        display: none;
+        text-align: center;
+        padding: 1rem;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+  <body class="bg-base-100">
+    <div class="w-96 max-h-[600px] overflow-y-auto">
+      <!-- Header -->
+      <header class="p-4 bg-base-300 border-b border-base-200">
+        <h1 class="text-xl font-bold text-center">Alia</h1>
+        <p class="text-sm text-center text-gray-400">Quick URL Shortener</p>
+      </header>
 
-		<main id="popup">
-			<div class="w-full">
-				<div id="topbar" class="p-8 fixed top-0 z-50 w-full bg-base-300">
-					<form id="go-form">
-						<input id="go" type="text" class="input input-lg input-secondary rounded mb-8 rounded-full" placeholder="Where to?">
-					</form>
-					<div id="new-wrapper">
-						<p class="pb-5">Add a new Alias</p>
-						<form id="new" class="flex gap-0 w-full">
-							<input id="alias" type="text" class="input input-md input-bordered rounded-l-full rounded-r-0 pl-6" placeholder="Alias">
-							<input id="url" type="text" class="input input-md input-bordered rounded-l-0 rounded-r-full" placeholder="URL">
-							<button type="submit" id="submit" class="bg-white text-black btn btn-md rounded-full ml-5">
-								<svg class="h-4 w-4" viewBox="0 0 12 12"><g fill="none"><path d="M6.5 1.75a.75.75 0 0 0-1.5 0V5H1.75a.75.75 0 0 0 0 1.5H5v3.25a.75.75 0 0 0 1.5 0V6.5h3.25a.75.75 0 0 0 0-1.5H6.5V1.75z" fill="currentColor"></path></g></svg>
-							</button>
-						</form>
-					</div>
-				</div>
-				<div id="aliases" class="px-8 py-6 bg-base-100"></div>
-			</div>
-		</main>
+      <!-- Search and Add New -->
+      <div class="p-4 border-b border-base-200">
+        <div class="mb-4">
+          <input
+            type="text"
+            id="search"
+            placeholder="Search aliases..."
+            class="input input-bordered w-full mb-2"
+          />
+        </div>
 
-	</body>
+        <div class="bg-base-200 p-4 rounded-lg">
+          <h2 class="text-sm font-semibold mb-2">Add New Alias</h2>
+          <form id="new-alias" class="space-y-2">
+            <div>
+              <input
+                type="text"
+                id="alias"
+                placeholder="Alias name"
+                class="input input-bordered w-full"
+                required
+              />
+            </div>
+            <div class="flex gap-2">
+              <input
+                type="url"
+                id="url"
+                placeholder="https://example.com"
+                class="input input-bordered flex-1"
+                required
+              />
+              <button type="submit" class="btn btn-primary">
+                <svg
+                  class="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  ></path>
+                </svg>
+                Add
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Aliases List -->
+      <div class="p-4">
+        <div class="flex justify-between items-center mb-3">
+          <div class="text-sm text-gray-400 flex items-center gap-2 w-full">
+            <span id="alias-count">0</span> aliases
+            <!-- <span class="text-gray-600">•</span> -->
+            <!-- <div class="flex items-center gap-1 w-full">
+              <span class="w-1/2"><span id="storage-used">0</span>% used</span>
+              <div class="w-full bg-gray-700 rounded-full h-1.5">
+                <div
+                  id="storage-bar"
+                  class="bg-blue-500 h-1.5 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div> -->
+          </div>
+        </div>
+
+        <!-- Import/Export Buttons -->
+        <div class="flex gap-2 mb-4">
+          <button id="export-btn" class="btn btn-sm btn-outline flex-1">
+            <svg
+              class="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              ></path>
+            </svg>
+            Export
+          </button>
+          <label
+            for="import-file"
+            class="btn btn-sm btn-outline flex-1 cursor-pointer"
+          >
+            <svg
+              class="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              ></path>
+            </svg>
+            Import
+            <input id="import-file" type="file" accept=".json" class="hidden" />
+          </label>
+        </div>
+
+        <div id="loading">Loading aliases...</div>
+        <div id="aliases" class="space-y-2">
+          <!-- Aliases will be inserted here -->
+        </div>
+
+        <div id="no-aliases" class="text-center py-8 text-gray-500">
+          No aliases yet. Add one above or import from a file.
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/lib/jquery-3.1.1.min.js"></script>
+    <script src="js/archive/popup-indexeddb.js"></script>
+  </body>
 </html>

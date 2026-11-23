@@ -2,14 +2,20 @@
   "manifest_version": 3,
   "name": "Alia",
   "short_name": "$",
-  "description": "To use, type 'q + tab' into the search bar.",
-  "version": "1.0",
+  "description": "Aliases for the omnibox ('q' + Tab), a full-window launcher for --app windows, and an Alt+L bar on any page.",
+  "version": "1.1",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1KCpnwUNbVMA/WWEFDwy3TWQcXuSykSgKChomQgFQB+PZMRF94KudgrVpTJ8fxtfwF26DhYLIOCN3A9yN2IA8sWKV2Q17fAOtjUtbYhbk6DcgEBu758xGNzS4u2uXpuPC5vHZgD2CHMu3uvPykav4chtJ/GK7r3lDyzQpAv7VevbcjSlLw/boCkhKiVQ7r+HIKmxFVDOW4F7+IGTriNmQTnvzPo1EoD1o9otq1er8d6QN/8dfaLNugIuRjW6/dHuycYxJjok9sqY5idK7EYpakP0WENYdBCdsIS5Yvw1hLlvs1KpvanQceGf98Vogf919//Ltkh/8rhhTRLVGFSvwQIDAQAB",
   "permissions": [
     "storage",
     "tabs",
-    "activeTab"
+    "activeTab",
+    "scripting",
+    "nativeMessaging",
+    "clipboardWrite"
   ],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "background": {
     "service_worker": "js/background.js",
     "type": "module"
@@ -19,10 +25,20 @@
     "default_icon": "img/icon16.png",
     "default_popup": "popup.html"
   },
-  "omnibox": { "keyword": "q" },
+  "omnibox": {
+    "keyword": "q"
+  },
   "icons": {
     "16": "img/icon16.png",
     "48": "img/icon48.png",
     "128": "img/icon128.png"
+  },
+  "commands": {
+    "open-bar": {
+      "suggested_key": {
+        "default": "Alt+L"
+      },
+      "description": "Open the Alia bar over the current page"
+    }
   }
 }

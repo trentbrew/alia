@@ -1,209 +1,213 @@
 import aliasStorage from './storage.js';
+import { resolve, matchAliases } from './resolve.js';
+import { runCommand } from './commands.js';
 
-let aliases = {};
+const LAUNCHER_PATH = 'launcher.html';
+const launcherUrl = () => chrome.runtime.getURL(LAUNCHER_PATH);
+const isLauncher = (url) => typeof url === 'string' && url.startsWith(launcherUrl());
 
-// Initialize aliases from IndexedDB
-aliasStorage
-  .getAll()
-  .then((storedAliases) => {
-    aliases = storedAliases || {};
-  })
-  .catch((error) => {
-    console.error('Error initializing aliases:', error);
-  });
-
-var re = /[\d\s\+\-=\(\)\*]+/g;
-
-// Safe math evaluation without eval()
-function safeMathEval(expr) {
-  // Only allow digits, operators, parentheses, and spaces
-  if (!/^[\d\s\+\-\*\/\(\)\.]+$/.test(expr)) return null;
-  try {
-    // Use Function constructor as safer alternative (still restricted by CSP)
-    // Instead, manually parse simple expressions
-    const sanitized = expr.replace(/\s/g, '');
-    // Simple recursive descent parser for basic math
-    return parseExpression(sanitized);
-  } catch {
-    return null;
-  }
-}
-
-function parseExpression(expr) {
-  let pos = 0;
-
-  function parseNumber() {
-    let start = pos;
-    while (pos < expr.length && /[\d\.]/.test(expr[pos])) pos++;
-    if (start === pos) return null;
-    return parseFloat(expr.slice(start, pos));
-  }
-
-  function parseFactor() {
-    if (expr[pos] === '(') {
-      pos++;
-      const result = parseAddSub();
-      if (expr[pos] === ')') pos++;
-      return result;
-    }
-    if (expr[pos] === '-') {
-      pos++;
-      return -parseFactor();
-    }
-    return parseNumber();
-  }
-
-  function parseMulDiv() {
-    let left = parseFactor();
-    while (pos < expr.length && (expr[pos] === '*' || expr[pos] === '/')) {
-      const op = expr[pos++];
-      const right = parseFactor();
-      left = op === '*' ? left * right : left / right;
-    }
-    return left;
-  }
-
-  function parseAddSub() {
-    let left = parseMulDiv();
-    while (pos < expr.length && (expr[pos] === '+' || expr[pos] === '-')) {
-      const op = expr[pos++];
-      const right = parseMulDiv();
-      left = op === '+' ? left + right : left - right;
-    }
-    return left;
-  }
-
-  const result = parseAddSub();
-  return pos === expr.length ? result : null;
-}
-
-// Escape special XML characters for omnibox descriptions
 function escapeXml(str) {
-  return str
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 }
-var link =
-  /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/;
-var search_url = /https:\/\/www\.google\.com\/search\?q=(\w+)&/;
 
-// on input change
+const startsWithInput = (alias, text) => alias.toLowerCase().startsWith(text.trim().toLowerCase());
+
+// ---------------------------------------------------------------------------
+// Omnibox keyword ("q" + Tab) in normal browser windows.
 
 chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
   try {
-    const allAliases = await aliasStorage.getAll();
-    aliases = allAliases || {};
-
-    var suggestions = [];
-    for (const key in aliases) {
-      if (key.startsWith(text) || text === '') {
-        var desc = `<match>${escapeXml(text)}: </match><dim>${escapeXml(key)} → </dim><url>${escapeXml(aliases[key])}</url>`;
-        suggestions.push({ content: aliases[key], description: desc });
-      }
-    }
-
-    if (suggestions.length > 0) {
-      var first = suggestions.splice(0, 1)[0];
+    const aliases = await aliasStorage.getAll();
+    const matches = matchAliases(text, aliases);
+    const target = resolve(text, aliases);
+    const head = matches[0];
+    if (head && (startsWithInput(head.alias, text) || !target)) {
       chrome.omnibox.setDefaultSuggestion({
-        description: first['description'],
+        description: `<match>${escapeXml(head.alias)}</match><dim> → </dim><url>${escapeXml(head.url)}</url>`,
       });
-    } else if (/^\d{4}$/.test(text)) {
-      // 4-digit number = localhost port
+      matches.shift();
+    } else if (target) {
       chrome.omnibox.setDefaultSuggestion({
-        description: `<match>localhost:</match><url>${text}</url>`,
-      });
-    } else if (/^\d+k$/i.test(text)) {
-      // Shorthand: 3k = localhost:3000, 8k = localhost:8000
-      const port = parseInt(text) * 1000;
-      chrome.omnibox.setDefaultSuggestion({
-        description: `<match>localhost:</match><url>${port}</url>`,
-      });
-    } else if (text.match(re) && /^[\d\s\+\-=\(\)\*]+$/.test(text)) {
-      // Only treat as math if it's PURELY math characters (no letters)
-      var result = safeMathEval(text);
-      if (result !== null && !isNaN(result)) {
-        chrome.omnibox.setDefaultSuggestion({
-          description: `<match>= </match><url>${result}</url>`,
-        });
-      } else {
-        chrome.omnibox.setDefaultSuggestion({
-          description: `<match>${escapeXml(text)}: </match><dim> - Google Search</dim>`,
-        });
-      }
-    } else {
-      chrome.omnibox.setDefaultSuggestion({
-        description: `<match>${escapeXml(text)}: </match><dim> - Google Search</dim>`,
+        description: `<match>${escapeXml(target.label)}</match><dim> → </dim><url>${escapeXml(target.url)}</url>`,
       });
     }
-    suggest(suggestions);
+    suggest(
+      matches.map(({ alias, url }) => ({
+        content: url,
+        description: `<match>${escapeXml(alias)}</match><dim> → </dim><url>${escapeXml(url)}</url>`,
+      })),
+    );
   } catch (error) {
-    console.error('Error in onInputChanged:', error);
-    chrome.omnibox.setDefaultSuggestion({
-      description: 'Error loading suggestions',
-    });
+    console.error('Alia: omnibox suggestions failed', error);
     suggest([]);
   }
-  // This block is now handled in the try-catch above
 });
 
-// accept omnibox input
-
-chrome.omnibox.onInputEntered.addListener(async (text) => {
+chrome.omnibox.onInputEntered.addListener(async (text, disposition) => {
+  let url;
   try {
-    // First check if it's a direct URL match
-    if (text.match(link)) {
-      chrome.tabs.update({ url: text });
-      return;
-    }
-
-    // Check if it's an alias (before math expression to allow aliases like '3k')
-    const url = await aliasStorage.get(text);
-    if (url) {
-      chrome.tabs.update({ url });
-      return;
-    }
-
-    // Check if it's a 4-digit port number -> localhost
-    if (/^\d{4}$/.test(text)) {
-      chrome.tabs.update({ url: `http://localhost:${text}` });
-      return;
-    }
-
-    // Shorthand: 3k = localhost:3000, 8k = localhost:8000
-    if (/^\d+k$/i.test(text)) {
-      const port = parseInt(text) * 1000;
-      chrome.tabs.update({ url: `http://localhost:${port}` });
-      return;
-    }
-
-    // Then check if it's a math expression (only pure math characters)
-    if (text.match(re) && /^[\d\s\+\-=\(\)\*]+$/.test(text)) {
-      var result = safeMathEval(text);
-      if (result !== null && !isNaN(result)) {
-        chrome.tabs.update({ url: `https://google.com/search?q=${result}` });
-        return;
-      }
-    }
-
-    // Default to Google search
-    chrome.tabs.update({ url: `https://google.com/search?q=${text}` });
+    const aliases = await aliasStorage.getAll();
+    // Mirrors onInputChanged: a prefix alias match is the default suggestion.
+    const head = matchAliases(text, aliases)[0];
+    const target = resolve(text, aliases);
+    url = target?.kind === 'search' && head && startsWithInput(head.alias, text) ? head.url : target?.url;
   } catch (error) {
-    console.error('Error in onInputEntered:', error);
-    // Default to Google search on error
-    chrome.tabs.update({ url: `https://google.com/search?q=${text}` });
+    console.error('Alia: omnibox resolve failed', error);
   }
-  // This block is now handled in the try-catch above
+  if (!url) return;
+  if (disposition === 'currentTab') chrome.tabs.update({ url });
+  else chrome.tabs.create({ url, active: disposition === 'newForegroundTab' });
 });
 
-// Starting input - refresh aliases
+// ---------------------------------------------------------------------------
+// "Alia windows": app windows opened on launcher.html, plus the popup windows
+// their new-tab links get moved into. Kept in session storage because the
+// service worker is torn down between events.
 
-chrome.omnibox.onInputStarted.addListener(async () => {
+async function getAliaWindows() {
+  const { aliaWindows = [] } = await chrome.storage.session.get('aliaWindows');
+  return new Set(aliaWindows);
+}
+
+async function markAliaWindow(windowId) {
+  const windows = await getAliaWindows();
+  if (windows.has(windowId)) return;
+  windows.add(windowId);
+  await chrome.storage.session.set({ aliaWindows: [...windows] });
+}
+
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
+  if (changeInfo.url && isLauncher(changeInfo.url)) markAliaWindow(tab.windowId).catch(() => {});
+});
+
+chrome.windows.onRemoved.addListener(async (windowId) => {
+  const windows = await getAliaWindows();
+  if (windows.delete(windowId)) await chrome.storage.session.set({ aliaWindows: [...windows] });
+});
+
+// target=_blank / window.open from an Alia window lands as a tab in a normal
+// (tabbed) window. Move it into a tab-strip-less popup window instead, keeping
+// the tab itself so window.opener (OAuth flows etc.) still works.
+chrome.tabs.onCreated.addListener(async (tab) => {
+  if (tab.openerTabId === undefined || tab.id === undefined) return;
   try {
-    aliases = (await aliasStorage.getAll()) || {};
+    const opener = await chrome.tabs.get(tab.openerTabId);
+    if (opener.windowId === tab.windowId) return;
+    if (!(await getAliaWindows()).has(opener.windowId)) return;
+    const home = await chrome.windows.get(tab.windowId);
+    if (home.type !== 'normal') return;
+    const popup = await chrome.windows.create({ tabId: tab.id, type: 'popup', focused: true });
+    if (popup?.id !== undefined) await markAliaWindow(popup.id);
   } catch (error) {
-    console.error('Error refreshing aliases:', error);
+    console.error('Alia: could not move new tab out of the tab strip', error);
   }
 });
+
+// ---------------------------------------------------------------------------
+// The bar: Alt+L (chrome://extensions/shortcuts) opens it over the current
+// page; where scripts cannot run (chrome://, the Web Store) it falls back to
+// the launcher page.
+
+async function openBar(tab) {
+  if (tab?.id === undefined) return;
+  if (isLauncher(tab.url)) {
+    chrome.runtime.sendMessage({ type: 'focus-bar' }).catch(() => {});
+    return;
+  }
+  try {
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['js/overlay.js'] });
+  } catch {
+    const from = tab.url ? `?from=${encodeURIComponent(tab.url)}` : '';
+    await chrome.tabs.update(tab.id, { url: `${launcherUrl()}${from}` });
+  }
+}
+
+chrome.commands.onCommand.addListener(async (command, tab) => {
+  if (command !== 'open-bar') return;
+  if (!tab) [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  await openBar(tab);
+});
+
+// ---------------------------------------------------------------------------
+// Messages from the overlay (content script) and the launcher page.
+
+async function handleMessage(message, sender) {
+  switch (message?.type) {
+    case 'register-window': {
+      if (sender.tab?.windowId !== undefined) await markAliaWindow(sender.tab.windowId);
+      return { ok: true };
+    }
+    case 'query': {
+      const aliases = await aliasStorage.getAll();
+      return { target: resolve(message.text, aliases), matches: matchAliases(message.text, aliases) };
+    }
+    case 'submit': {
+      const aliases = await aliasStorage.getAll();
+      const here = isLauncher(sender.tab?.url) ? undefined : sender.tab?.url;
+      const command = await runCommand(message.text, aliasStorage, aliases, message.currentUrl ?? here);
+      if (command.done) return command;
+      const url = message.url ?? resolve(message.text, aliases)?.url;
+      if (url && sender.tab?.id !== undefined) await chrome.tabs.update(sender.tab.id, { url });
+      return { done: true, ok: Boolean(url) };
+    }
+    default:
+      return undefined;
+  }
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!['register-window', 'query', 'submit'].includes(message?.type)) return false;
+  handleMessage(message, sender).then(sendResponse, (error) => {
+    console.error('Alia: message failed', error);
+    sendResponse({ done: true, ok: false, message: String(error?.message ?? error) });
+  });
+  return true;
+});
+
+// ---------------------------------------------------------------------------
+// Window bar: publish the active tab's favicon through a native messaging host
+// so the Omarchy bottom bar can show it. The host downloads the icon to a
+// local file; the browser never talks to QML. Failures are silent — the bar
+// just keeps showing the app icon.
+
+const WINDOWBAR_HOST = 'com.trentbrew.windowbar';
+let lastWindowbarReport = '';
+
+async function reportActiveTab() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    if (!tab) return;
+
+    const url = typeof tab.url === 'string' ? tab.url : '';
+    const favicon = typeof tab.favIconUrl === 'string' ? tab.favIconUrl : '';
+    const title = typeof tab.title === 'string' ? tab.title : '';
+    const signature = `${tab.id}|${url}|${favicon}|${title}`;
+    if (signature === lastWindowbarReport) return;
+    lastWindowbarReport = signature;
+
+    await chrome.runtime.sendNativeMessage(WINDOWBAR_HOST, {
+      url,
+      favicon,
+      title,
+      windowId: tab.windowId,
+    });
+  } catch {
+    void chrome.runtime.lastError;
+  }
+}
+
+chrome.tabs.onActivated.addListener(reportActiveTab);
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
+  if (changeInfo.url || changeInfo.favIconUrl || changeInfo.title || changeInfo.status === 'complete') {
+    reportActiveTab();
+  }
+});
+chrome.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId !== chrome.windows.WINDOW_ID_NONE) reportActiveTab();
+});
+reportActiveTab();
